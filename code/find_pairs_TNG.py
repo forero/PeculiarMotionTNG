@@ -22,6 +22,7 @@ print('Simulation {}'.format(sim_name))
 halos = gc.loadHalos(base_path, 99, fields=halo_fields)
 halo_stellar_mass = halos['GroupMassType'][:,4]
 dm_halo_mass = halos['Group_M_Crit200']
+rank_id = np.arange(len(dm_halo_mass), dtype=int)
 
 # Read header
 header = gc.loadHeader(base_path,99)
@@ -39,6 +40,8 @@ S_pos = halos['GroupPos'][ii]
 S_vel = halos['GroupVel'][ii]
 S_stellar_mass = halo_stellar_mass[ii]
 S_parent_fof = halos['Group_M_Crit200'][ii]
+S_rank_id = rank_id[ii]
+
 
 n_S = len(S_stellar_mass)
 print('Kept {} halos'.format(n_S))
@@ -49,7 +52,7 @@ S_pad_pos = S_pos.copy()
 S_pad_vel = S_vel.copy()
 S_pad_stellar_mass = S_stellar_mass.copy()
 S_pad_fof = S_parent_fof.copy()
-S_pad_id = np.arange(n_S)
+S_pad_id = S_rank_id.copy()
 for i in (0,1,-1):
     for j in (0,1,-1):
         for k in (0,1,-1):
@@ -65,7 +68,7 @@ for i in (0,1,-1):
                 S_pad_pos = np.append(S_pad_pos, new_pos, axis=0)
                 S_pad_vel = np.append(S_pad_vel, S_vel, axis=0)
                 S_pad_stellar_mass = np.append(S_pad_stellar_mass, S_stellar_mass)
-                S_pad_id = np.append(S_pad_id, np.arange(n_S))
+                S_pad_id = np.append(S_pad_id, S_rank_id)
                 S_pad_fof = np.append(S_pad_fof, S_parent_fof)
 
 
@@ -107,8 +110,8 @@ for i in range(n_S):
                 massive_close_to_j = any((dist_S[j,2:]<dist_limit) & (S_pad_stellar_mass[other_l] >= mass_limit))
                 if((not massive_close_to_i) & (not massive_close_to_j)): # check on massive structures inside exclusion radius
                     n_pairs = n_pairs+ 1
-                    halo_A_id = np.append(halo_A_id, int(i))
-                    halo_B_id = np.append(halo_B_id, int(j))
+                    halo_A_id = np.append(halo_A_id, int(S_pad_id[i]))
+                    halo_B_id = np.append(halo_B_id, int(S_pad_id[j]))
                     vel_i = S_pad_vel[i,:]
                     vel_j = S_pad_vel[j,:]
 
@@ -124,5 +127,9 @@ print('Found {} pairs'.format(n_pairs))
 vcm = np.array(vcm)
 fileout = '../data/summary_vcm_{}.dat'.format(sim_name)
 np.savetxt(fileout, vcm.T)
-print(' wrote data to {}'.format(fileout))
+print(' wrote velocity data to {}'.format(fileout))
 
+pairid = np.array([halo_A_id, halo_B_id])
+fileout = '../data/summary_ids_{}.dat'.format(sim_name)
+np.savetxt(fileout, np.int_(pairid.T), fmt='%d %d')
+print(' wrote ID data to {}'.format(fileout))
