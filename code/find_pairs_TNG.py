@@ -87,7 +87,12 @@ n_pairs = 0
 vcm = []
 halo_A_id = np.empty((0), dtype=int)
 halo_B_id = np.empty((0), dtype=int)
-
+pos_A = []
+pos_B = []
+vel_A = []
+vel_B = []
+mass_A = []
+mass_B = []
 for i in range(n_S):
     l = neighbor_index[neighbor_index[i]]% n_S
     j = neighbor_index[i] % n_S
@@ -96,10 +101,10 @@ for i in range(n_S):
     other_l = neighbor_list[neighbor_index[i],:] % n_S
     
     if((i==l) & (not (j in halo_A_id)) & (not (i in halo_B_id))): # first check to find mutual neighbors
-        if((dist_S[i,1] > 1000.0)): #check on the distance between the two galaxies
+        if((dist_S[i,1] < 1000.0)): #check on the distance between the two galaxies
             halo_mass_i = S_pad_fof[i]
             halo_mass_j = S_pad_fof[j]
-            if (halo_mass_i < 500) and (halo_mass_j < 500): # check on the stellar mass of the two halos
+            if (halo_mass_i < 5000) and (halo_mass_j < 5000): # check on the stellar mass of the two halos
 
                 mass_limit = min([halo_mass_i, halo_mass_j])
                 
@@ -114,6 +119,12 @@ for i in range(n_S):
                     halo_B_id = np.append(halo_B_id, int(S_pad_id[j]))
                     vel_i = S_pad_vel[i,:]
                     vel_j = S_pad_vel[j,:]
+                    pos_A.append(S_pad_pos[i,:])
+                    pos_B.append(S_pad_pos[j,:])
+                    vel_A.append(vel_i)
+                    vel_B.append(vel_j)
+                    mass_A.append(halo_mass_i)
+                    mass_B.append(halo_mass_j)
 
                     # center of mass velocity
                     m_tot = halo_mass_i + halo_mass_j
@@ -122,14 +133,34 @@ for i in range(n_S):
                     vcm.append(v)
 
 
-print('Found {} pairs'.format(n_pairs))
+print('Found {} siolated pairs pairs'.format(n_pairs))
 
+# write center of mass velocity
 vcm = np.array(vcm)
 fileout = '../data/summary_vcm_{}.dat'.format(sim_name)
 np.savetxt(fileout, vcm.T)
 print(' wrote velocity data to {}'.format(fileout))
 
+# write IDS
 pairid = np.array([halo_A_id, halo_B_id])
 fileout = '../data/summary_ids_{}.dat'.format(sim_name)
 np.savetxt(fileout, np.int_(pairid.T), fmt='%d %d')
 print(' wrote ID data to {}'.format(fileout))
+
+# write positions
+pos = np.concatenate([pos_A,pos_B], axis=1)
+fileout = '../data/summary_pos_{}.dat'.format(sim_name)
+np.savetxt(fileout, pos, fmt='%f %f %f %f %f %f')
+print(' wrote pos data to {}'.format(fileout))
+
+# write velocities
+vel = np.concatenate([vel_A,vel_B], axis=1)
+fileout = '../data/summary_vel_{}.dat'.format(sim_name)
+np.savetxt(fileout, vel, fmt='%f %f %f %f %f %f')
+print(' wrote vel data to {}'.format(fileout))
+
+# write masses
+mass = np.array([mass_A,mass_B])
+fileout = '../data/summary_mass_{}.dat'.format(sim_name)
+np.savetxt(fileout, mass.T, fmt='%f %f')
+print(' wrote mass data to {}'.format(fileout))
