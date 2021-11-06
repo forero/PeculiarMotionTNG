@@ -136,10 +136,10 @@ for i in range(n_S):
 print('Found {} siolated pairs pairs'.format(n_pairs))
 
 # write center of mass velocity
-vcm = np.array(vcm)
-fileout = '../data/summary_vcm_{}.dat'.format(sim_name)
-np.savetxt(fileout, vcm.T)
-print(' wrote velocity data to {}'.format(fileout))
+#vcm = np.array(vcm)
+#fileout = '../data/summary_vcm_{}.dat'.format(sim_name)
+#np.savetxt(fileout, vcm.T)
+#print(' wrote velocity data to {}'.format(fileout))
 
 # write IDS
 pairid = np.array([halo_A_id, halo_B_id])
