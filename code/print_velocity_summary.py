@@ -103,8 +103,8 @@ norm_delta_v_hflow = np.zeros(len(d))
 for i in range(3):
     norm_delta_v_hflow[:] += delta_v_hflow[:,i]*r_hat[:,i]
     
-ii = (norm_v_rad<0) & (norm_delta_r<1000)
-
+hubble = 0.67
+ii = (norm_v_rad<0) & (norm_delta_r < 1000)
 
 results  = np.array([norm_cm_vel[ii], norm_v_tan[ii], norm_v_rad[ii]])
 
